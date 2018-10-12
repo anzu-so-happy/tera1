@@ -1,0 +1,42 @@
+version: "2"
+
+services:
+  #app:
+  #  image: centos
+  # Mariadb
+  mariadb:
+    build: ./server/docker/mariadb
+    #volumes_from:
+      #- app
+    volumes:
+      - ./data/db:/var/lib/mysql
+    restart: always
+    ports:
+      - "4306:3306"
+    networks:
+      - wordpress_network
+    env_file: .env
+  wordpress:
+    image: wordpress:php7.2-apache
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - mariadb
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+    volumes:
+      - ./data/html:/var/www/html
+      - "$PWD/.docker/backup:/tmp/backup"
+      - "$PWD/.docker/log:/tmp/log"
+    networks:
+      - wordpress_network
+    env_file: .env
+
+# 名前付きデータボリューム
+volumes:
+  db:
+networks:
+  wordpress_network:
+
